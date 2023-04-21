@@ -110,6 +110,20 @@
       "frameworks": {
         "netstandard2.1": {
           "targetAlias": "netstandard2.1",
+          "dependencies": {
+            "OpenAI": {
+              "target": "Package",
+              "version": "[1.7.2, )"
+            },
+            "System.Text.Json": {
+              "target": "Package",
+              "version": "[7.0.2, )"
+            },
+            "WebSocketSharp": {
+              "target": "Package",
+              "version": "[1.0.3-rc11, )"
+            }
+          },
           "imports": [
             "net461",
             "net462",

@@ -5,66 +5,93 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using WebSocketSharp;
+using WebSocketSharp.Server;
+using System.Security.Cryptography.X509Certificates;
+using System.Timers;
+using System.Runtime.CompilerServices;
+using MinecraftConnectionBE.JsonProperty;
+using System.Text.Json;
+using MinecraftConnectionBE.Commands;
 
 namespace MinecraftConnectionBE
 {
-    public class MinecraftCommands : MCWebSocket
+    public class MinecraftCommands : WebSocketBehavior
     {
-        public MinecraftCommands(string url, ushort port) : base(url, port)
+        private WebSocketServer _server;
+
+        public MinecraftCommands(IPAddress address, int port)
         {
-          
+            _server = new WebSocketServer(address, port);
+            _server.WaitTime = TimeSpan.FromSeconds(120);
+            _server.AddWebSocketService<SendCommandService>("/");
+            _server.Start();
         }
 
-        protected override async Task ProcessWebSocketRequestAsync(HttpListenerContext context)
+        private void OnDestroy()
         {
-            var webSocketContext = await context.AcceptWebSocketAsync(subProtocol: null);
-            var webSocket = webSocketContext.WebSocket;
+            _server.Stop();
+            _server = null;
+        }
 
-            Console.WriteLine("WebSocket connection established.");
+        public void ServerStop()
+        {
+            OnDestroy();
+        }
 
-            while (webSocket.State == WebSocketState.Open)
+        protected string MakeCommand(string command)
+        {
+            var json = new CommandRequestJson
             {
-                // wait for a command from the client
-                string command = await ReceiveCommandAsync(webSocket);
-                if (command == null)
+                body = new CommandRequestJson.Body
                 {
-                    break;
+                    origin = new CommandRequestJson.Body.Origin
+                    {
+                        type = "player"
+                    },
+                    commandLine = command,
+                },
+                header = new CommandRequestJson.Header
+                {
+                    requestId = Guid.NewGuid().ToString(),
+                    messagePurpose = "commandRequest",
+                    messageType = "commandRequest"
                 }
+            };
 
-                Console.WriteLine($"Received command: {command}");
-
-                // send the command to the Minecraft server and wait for the response
-                await SendCommandAsync(webSocket, command);
-                var response = await ReceiveCommandAsync(webSocket);
-                Console.WriteLine($"Response: {response}");
-            }
-
-            Console.WriteLine("WebSocket connection closed.");
+            return JsonSerializer.Serialize(json);
         }
 
-        protected override async Task SendCommandAsync(WebSocket webSocket, string command)
+        // ここの引数、将来的に列挙体にしたい
+        protected string MakeSubscribe(string eventName)
         {
-            // Send the command to the Minecraft server
-            // ...
-
-            // Simulate the response from the Minecraft server
-            await Task.Delay(1000);
-
-            // Send the response to the client
-            string response = "OK";
-            var buffer = Encoding.UTF8.GetBytes(response);
-            await webSocket.SendAsync(new ArraySegment<byte>(buffer), WebSocketMessageType.Text, true, CancellationToken.None);
+            var json = new EventSubscribeJson
+            {
+                body = new EventSubscribeJson.Body
+                {
+                    eventName = eventName,
+                },
+                header = new EventSubscribeJson.Header
+                {
+                    requestId = Guid.NewGuid().ToString(),
+                    messagePurpose = "subscribe",
+                    messageType = "commandRequest"
+                },
+            };
+            return JsonSerializer.Serialize(json);
         }
 
-        protected override async Task<string> ReceiveCommandAsync(WebSocket webSocket)
+        public void SendCommand(string command)
         {
-            var buffer = new byte[1024];
-            var result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
-            var message = Encoding.UTF8.GetString(buffer, 0, result.Count);
+            Send(MakeCommand(command));
+        }
 
-            Console.WriteLine("Response: " + message);
-
-            return message;
+        protected override void OnOpen()
+        {
+            Send(MakeSubscribe("PlayerMessage"));
+#if DEBUG
+            Console.WriteLine("Connected.");
+#endif
         }
     }
 }

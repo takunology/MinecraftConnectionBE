@@ -5,4 +5,10 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="OpenAI" Version="1.7.2" />
+    <PackageReference Include="System.Text.Json" Version="7.0.2" />
+    <PackageReference Include="WebSocketSharp" Version="1.0.3-rc11" />
+  </ItemGroup>
+
 </Project>

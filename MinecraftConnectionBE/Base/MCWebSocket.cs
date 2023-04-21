@@ -1,75 +1,42 @@
-﻿using System;
+﻿using MinecraftConnectionBE.JsonProperty;
+using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Net.WebSockets;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Input;
+using WebSocketSharp;
+using WebSocketSharp.Server;
 
 namespace MinecraftConnectionBE.Base
 {
-    public abstract class MCWebSocket
+    public class MCWebSocket : WebSocketBehavior
     {
-        protected HttpListener listener;
-        protected CancellationTokenSource cts;
-        protected bool isRunning;
+        
 
-        public MCWebSocket(string uri, ushort port)
+
+        protected override void OnOpen()
         {
-            listener = new HttpListener();
-            listener.Prefixes.Add($"http://{uri}:{port}/");
-            cts = new CancellationTokenSource();
-            isRunning = false;
-            StartAsync().Wait();
+#if DEBUG
+            Console.WriteLine("Connected.");
+#endif
         }
 
-        public async Task StartAsync()
+        protected override void OnError(ErrorEventArgs e)
         {
-            listener.Start();
-            isRunning = true;
-            Console.WriteLine("WebSocket server started.");
-
-            while (isRunning)
-            {
-                try
-                {
-                    var context = await listener.GetContextAsync();
-                    if (context.Request.IsWebSocketRequest)
-                    {
-                        await ProcessWebSocketRequestAsync(context);
-                    }
-                    else
-                    {
-                        context.Response.StatusCode = 400;
-                        context.Response.Close();
-                    }
-                }
-                catch (HttpListenerException)
-                {
-                    // HttpListener has been stopped
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex.ToString());
-                }
-            }
-
-            listener.Close();
-            Console.WriteLine("WebSocket server stopped.");
+            Console.WriteLine(e);
         }
 
-        public void Stop()
+        protected override void OnMessage(MessageEventArgs e)
         {
-            isRunning = false;
-            cts.Cancel();
+#if DEBUG
+            Console.WriteLine(e.Data);
+#endif
         }
-
-        protected abstract Task ProcessWebSocketRequestAsync(HttpListenerContext context);
-
-        protected abstract Task SendCommandAsync(WebSocket webSocket, string command);
-
-        protected abstract Task<string> ReceiveCommandAsync(WebSocket webSocket);
-    }
+    }    
 }
