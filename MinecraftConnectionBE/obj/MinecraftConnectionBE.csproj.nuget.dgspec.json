@@ -5,7 +5,7 @@
   },
   "projects": {
     "D:\\GitHub\\MinecraftConnectionBE\\MinecraftConnectionBE\\MinecraftConnectionBE.csproj": {
-      "version": "1.0.0",
+      "version": "1.0.0-beta1",
       "restore": {
         "projectUniqueName": "D:\\GitHub\\MinecraftConnectionBE\\MinecraftConnectionBE\\MinecraftConnectionBE.csproj",
         "projectName": "MinecraftConnectionBE",

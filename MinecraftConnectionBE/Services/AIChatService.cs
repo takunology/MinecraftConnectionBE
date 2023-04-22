@@ -1,47 +1,48 @@
 ﻿using MinecraftConnectionBE.JsonProperty;
+using MinecraftConnectionBE.Model;
 using OpenAI_API;
+using OpenAI_API.Chat;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Text.Json;
 using WebSocketSharp;
 using WebSocketSharp.Server;
 
-namespace MinecraftConnectionBE.Commands
+namespace MinecraftConnectionBE.Services
 {
-    internal class SendCommandService : WebSocketBehavior
+    public class AIChatService : WebSocketBehavior
     {
-        private string _json;
-        private string apiKey = "";
-
-        public void SetCommand(string json)
-        {
-            _json = json;
-        }
+        private static OpenAIAPI _api = new OpenAIAPI(AIChatModel.ApiKey);
+        private static Conversation _chat = _api.Chat.CreateConversation();
 
         protected override void OnError(ErrorEventArgs e)
         {
             Console.WriteLine(e);
         }
 
+        protected override void OnOpen()
+        {
+            Send(MakeSubscribe("PlayerMessage"));
+        }
+
         protected override async void OnMessage(MessageEventArgs e)
         {
             var json = JsonSerializer.Deserialize<ResponceJson>(e.Data);
-            if(json.body.sender == "classmall_teache")
+            if(json.body.sender == AIChatModel.PlayerName)
             {
-                var api = new OpenAIAPI(apiKey);
-                var chat = api.Chat.CreateConversation();
                 var prompt = json.body.message;
-                chat.AppendUserInput(prompt);
+                _chat.AppendUserInput(prompt);
 #if DEBUG
                 Console.WriteLine(prompt);
 #endif
-                var result = await chat.GetResponseFromChatbotAsync();
+                var result = await _chat.GetResponseFromChatbotAsync();
+#if DEBUG
+                Console.WriteLine($"AI>{result}");
+#endif
                 Sessions.Broadcast(MakeCommand($"/say {result}"));
             }
         }
 
-        protected string MakeCommand(string command)
+        private string MakeCommand(string command)
         {
             var json = new CommandRequestJson
             {
@@ -64,8 +65,7 @@ namespace MinecraftConnectionBE.Commands
             return JsonSerializer.Serialize(json);
         }
 
-        // ここの引数、将来的に列挙体にしたい
-        protected string MakeSubscribe(string eventName)
+        private string MakeSubscribe(string eventName)
         {
             var json = new EventSubscribeJson
             {

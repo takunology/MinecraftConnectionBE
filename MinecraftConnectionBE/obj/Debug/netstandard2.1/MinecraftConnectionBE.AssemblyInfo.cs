@@ -11,10 +11,13 @@
 using System;
 using System.Reflection;
 
-[assembly: System.Reflection.AssemblyCompanyAttribute("MinecraftConnectionBE")]
+[assembly: System.Reflection.AssemblyCompanyAttribute("Takumi Okawa (Takunology)")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
+[assembly: System.Reflection.AssemblyCopyrightAttribute("Copyright (c) 2023 Takumi Okawa (Takunology)")]
+[assembly: System.Reflection.AssemblyDescriptionAttribute("MinecraftConnectionBE is a command sending library for MinecraftBE or Minecraft E" +
+    "ducation. It can be useful for automation and programming learning.")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0-beta1")]
 [assembly: System.Reflection.AssemblyProductAttribute("MinecraftConnectionBE")]
 [assembly: System.Reflection.AssemblyTitleAttribute("MinecraftConnectionBE")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -1,22 +1,12 @@
-﻿using MinecraftConnectionBE.Base;
-using System;
-using System.Net.WebSockets;
+﻿using System;
 using System.Net;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using WebSocketSharp;
 using WebSocketSharp.Server;
-using System.Security.Cryptography.X509Certificates;
-using System.Timers;
-using System.Runtime.CompilerServices;
-using MinecraftConnectionBE.JsonProperty;
-using System.Text.Json;
-using MinecraftConnectionBE.Commands;
+using MinecraftConnectionBE.Services;
+using MinecraftConnectionBE.Model;
 
 namespace MinecraftConnectionBE
 {
-    public class MinecraftCommands : WebSocketBehavior
+    public class MinecraftCommands
     {
         private WebSocketServer _server;
 
@@ -24,8 +14,8 @@ namespace MinecraftConnectionBE
         {
             _server = new WebSocketServer(address, port);
             _server.WaitTime = TimeSpan.FromSeconds(120);
-            _server.AddWebSocketService<SendCommandService>("/");
             _server.Start();
+            Console.WriteLine($"Listening to {_server.Address}:{_server.Port}");
         }
 
         private void OnDestroy()
@@ -34,64 +24,35 @@ namespace MinecraftConnectionBE
             _server = null;
         }
 
-        public void ServerStop()
+        private void ServerStop()
         {
             OnDestroy();
         }
 
-        protected string MakeCommand(string command)
+        /// <summary>
+        /// Use the OpenAI API functionality to start a chat.
+        /// </summary>
+        /// <param name="apiKey">API Key for OpenAI API</param>
+        /// <param name="playerName">Minecraft user id (It is a conversation trigger.)</param>
+        public void AIChat(string apiKey, string playerName)
         {
-            var json = new CommandRequestJson
-            {
-                body = new CommandRequestJson.Body
-                {
-                    origin = new CommandRequestJson.Body.Origin
-                    {
-                        type = "player"
-                    },
-                    commandLine = command,
-                },
-                header = new CommandRequestJson.Header
-                {
-                    requestId = Guid.NewGuid().ToString(),
-                    messagePurpose = "commandRequest",
-                    messageType = "commandRequest"
-                }
-            };
-
-            return JsonSerializer.Serialize(json);
+            AIChatModel.PlayerName = playerName;
+            AIChatModel.ApiKey = apiKey;
+            _server.AddWebSocketService<AIChatService>("/");
         }
 
-        // ここの引数、将来的に列挙体にしたい
-        protected string MakeSubscribe(string eventName)
+        /// <summary>
+        /// Executes a command when an event triggers.
+        /// </summary>
+        /// <param name="command">Minecraft command</param>
+        /// <param name="proposal">Triggering statements</param>
+        /// <returns></returns>
+        public void SubscribeCommand(string command, string statement)
         {
-            var json = new EventSubscribeJson
-            {
-                body = new EventSubscribeJson.Body
-                {
-                    eventName = eventName,
-                },
-                header = new EventSubscribeJson.Header
-                {
-                    requestId = Guid.NewGuid().ToString(),
-                    messagePurpose = "subscribe",
-                    messageType = "commandRequest"
-                },
-            };
-            return JsonSerializer.Serialize(json);
-        }
-
-        public void SendCommand(string command)
-        {
-            Send(MakeCommand(command));
-        }
-
-        protected override void OnOpen()
-        {
-            Send(MakeSubscribe("PlayerMessage"));
-#if DEBUG
-            Console.WriteLine("Connected.");
-#endif
+            SendCommandModel.Command = command;
+            SendCommandModel.Trigger = Enum.GetName(typeof(MinecraftEvents), MinecraftEvents.PlayerMessage);
+            SendCommandModel.Statement = statement;
+            _server.AddWebSocketService<SendCommandService>("/");
         }
     }
 }

@@ -268,7 +268,7 @@
           "lib/websocket-sharp.dll": {}
         }
       },
-      "MinecraftConnectionBE/1.0.0": {
+      "MinecraftConnectionBE/1.0.0-beta1": {
         "type": "project",
         "framework": ".NETStandard,Version=v2.1",
         "dependencies": {
@@ -652,7 +652,7 @@
         "websocketsharp.nuspec"
       ]
     },
-    "MinecraftConnectionBE/1.0.0": {
+    "MinecraftConnectionBE/1.0.0-beta1": {
       "type": "project",
       "path": "../MinecraftConnectionBE/MinecraftConnectionBE.csproj",
       "msbuildProject": "../MinecraftConnectionBE/MinecraftConnectionBE.csproj"
@@ -660,7 +660,7 @@
   },
   "projectFileDependencyGroups": {
     "net6.0": [
-      "MinecraftConnectionBE >= 1.0.0"
+      "MinecraftConnectionBE >= 1.0.0-beta1"
     ]
   },
   "packageFolders": {
