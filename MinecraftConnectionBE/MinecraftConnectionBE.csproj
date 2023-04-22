@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <Nullable>enable</Nullable>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Version>1.0.0-beta1</Version>
+    <Authors>Takumi Okawa (Takunology)</Authors>
+    <Description>MinecraftConnectionBE is a command sending library for MinecraftBE or Minecraft Education. It can be useful for automation and programming learning.</Description>
+    <Copyright>Copyright (c) 2023 Takumi Okawa (Takunology)</Copyright>
+    <PackageProjectUrl>https://www.mcwithcode.com</PackageProjectUrl>
+    <PackageIcon>MCBELogo.png</PackageIcon>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>Minecraft</PackageTags>
+    <PackageReleaseNotes>Beta release
+- You can chat with them using the OpenAI API.
+- The SubscribeCommand() method can be used to execute commands triggered by chat.</PackageReleaseNotes>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="OpenAI" Version="1.7.2" />
+    <PackageReference Include="System.Text.Json" Version="7.0.2" />
+    <PackageReference Include="WebSocketSharp" Version="1.0.3-rc11" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="MCBELogo.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+
+</Project>
